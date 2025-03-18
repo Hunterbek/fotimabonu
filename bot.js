@@ -2,39 +2,40 @@ const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
 
 // Bot tokeningizni shu yerga yozing
-const token = '6525215749:AAGE_UO5FAHH5-8tCA68uXgyOP93NAsJ6ak';
-const targetBotToken = '8007247318:AAF3EGrcSTFwz0dmsUg3uoDjeZy8jS77HLM'; // Ma'lumot yuboriladigan bot
-const targetChatId = '1514472577'; // Ma'lumot yuboriladigan chat ID
+const token = '8001151305:AAFluvFE3WHCojToQafOVspYyopiajCLMAY';
+const targetBotToken = '7938960342:AAER6tif0h-qzDlGWW9boIcjDJ4W-yFeBGM'; // Ma'lumot yuboriladigan bot tokeni
+const targetChatId = '6525277828'; // Admin yoki manager chat ID
 
-// Botni ishga tushiramiz
+// Botni ishga tushirish
 const bot = new TelegramBot(token, { polling: true });
 
+// Foydalanuvchi bosqichlarini saqlash
 let userSteps = {};
 let userData = {};
 
-// /start komandasi
+const courses = [
+    ["🇬🇧 Ingliz tili", "🇷🇺 Rus tili", "🇸🇦 Arab tili"],
+    ["💊 Farmosevtika", "🏥 Uy Hamshiraligi"],
+    ["🧬 Biologiya", "🧪 Kimyo", "🧮 Matematika"],
+    ["⚛️ Fizika", "💆‍♂️ Tibbiy massaj"]
+];
+
+// Start komandasi
 bot.onText(/\/start/, (msg) => {
     const chatId = msg.chat.id;
     userSteps[chatId] = 'choosing_course';
 
-    bot.sendMessage(chatId, "Assalomu alaykum! \nBiznes Fabrika o'quv markaziga xush kelibsiz! Qaysi kurslarimizga qiziqish bildirmoqchisiz?", {
+    bot.sendMessage(chatId, "🎓 *Fotimabonu O'quv markaziga xush kelibsiz!* 🎓\n\n📚 Qaysi kursga qiziqasiz?", {
+        parse_mode: 'Markdown',
         reply_markup: {
-            keyboard: [
-                ["IT dasturlash", "Kompyuter savodxonligi"],
-                ["Bugalteriya", "Uy hamshiraligi"],
-                ["Masajj kursi", "Qandolatchilik"],
-                ["Arab tili", "Ingliz tili"],
-                ["Koreys tili", "Rus tili"],
-                ["Matematika", "Tarix"],
-                ["Fizika", "Mental arifmetika"]
-            ],
+            keyboard: courses,
             resize_keyboard: true,
             one_time_keyboard: true
         }
     });
 });
 
-// Foydalanuvchi xabarlarini qayta ishlash
+// Xabarlarni qayta ishlash
 bot.on('message', (msg) => {
     const chatId = msg.chat.id;
     const text = msg.text;
@@ -42,14 +43,12 @@ bot.on('message', (msg) => {
     if (userSteps[chatId] === 'choosing_course' && text !== "/start") {
         userSteps[chatId] = 'asking_name';
         userData[chatId] = { kurs: text, sana: new Date().toLocaleString() };
-
-        bot.sendMessage(chatId, `Siz \"${text}\" kursini tanladingiz!\nIltimos, ismingizni kiriting. \nMisol uchun: *Ziyovuddin*`, { parse_mode: 'Markdown' });
+        bot.sendMessage(chatId, `✅ Siz *${text}* kursini tanladingiz!\n👤 Iltimos, ismingizni kiriting.`, { parse_mode: 'Markdown' });
 
     } else if (userSteps[chatId] === 'asking_name') {
         userSteps[chatId] = 'asking_phone';
         userData[chatId].ism = text;
-
-        bot.sendMessage(chatId, `Rahmat, *${text}*! Endi iltimos, telefon raqamingizni yuboring.`, {
+        bot.sendMessage(chatId, `👍 Rahmat, *${text}*!\n📞 Endi telefon raqamingizni yuboring.`, {
             parse_mode: 'Markdown',
             reply_markup: {
                 keyboard: [[{ text: "📞 Telefon raqamni yuborish", request_contact: true }]],
@@ -60,21 +59,22 @@ bot.on('message', (msg) => {
 
     } else if (msg.contact) {
         userData[chatId].telefon = msg.contact.phone_number;
-
-        bot.sendMessage(chatId, "✅ Sizning ma'lumotlaringiz qabul qilindi! Tez orada siz bilan bog'lanamiz. Rahmat!", {
+        
+        bot.sendMessage(chatId, "✅ *Ma'lumotlaringiz qabul qilindi!* \n☎️ Tez orada siz bilan bog'lanamiz.", {
+            parse_mode: 'Markdown',
             reply_markup: { remove_keyboard: true }
         });
 
-        // Ma'lumotni boshqa botga yuborish
-        const message = `📌 *Yangi ro'yxatga olish*\n\n📅 Sana: ${userData[chatId].sana}\n📚 Kurs: ${userData[chatId].kurs}\n👤 Ism: ${userData[chatId].ism}\n📞 Telefon: ${userData[chatId].telefon}`;
+        // Ma'lumotlarni boshqa botga yuborish
+        const message = `📌 *Yangi ro'yxatga olish*\n\n📅 *Sana:* ${userData[chatId].sana}\n📚 *Kurs:* ${userData[chatId].kurs}\n👤 *Ism:* ${userData[chatId].ism}\n📞 *Telefon:* ${userData[chatId].telefon}`;
 
         axios.post(`https://api.telegram.org/bot${targetBotToken}/sendMessage`, {
             chat_id: targetChatId,
             text: message,
             parse_mode: 'Markdown'
-        }).catch(err => console.error('Xatolik yuz berdi:', err));
+        }).catch(err => console.error('Xatolik:', err));
 
-        // Foydalanuvchi ma'lumotlarini o'chirish
+        // Tozalash
         delete userSteps[chatId];
         delete userData[chatId];
     }
