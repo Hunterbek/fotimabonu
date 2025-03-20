@@ -2,8 +2,8 @@ const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
 
 // Bot tokeningizni shu yerga yozing
-const token = '8001151305:AAFluvFE3WHCojToQafOVspYyopiajCLMAY';
-const targetBotToken = '7938960342:AAER6tif0h-qzDlGWW9boIcjDJ4W-yFeBGM'; // Ma'lumot yuboriladigan bot tokeni
+const token = '8001151305:AAHWxW5I7nGr-aBWM396gLsOLQMH9B84tD4';
+const targetBotToken = '7938960342:AAEL6f5uvVzfx99xj56sJhOuv7NRG2l2y_Y'; // Ma'lumot yuboriladigan bot tokeni
 const targetChatId = '6525277828'; // Admin yoki manager chat ID
 
 // Botni ishga tushirish
