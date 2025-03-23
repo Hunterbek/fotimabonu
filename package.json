@@ -1,18 +1,14 @@
 {
-  "name": "telegram-bot",
+  "name": "fotimabonu-bot",
   "version": "1.0.0",
+  "description": "Fotimabonu o'quv markazi uchun Telegram bot",
   "main": "bot.js",
   "scripts": {
-    "start": "node bot.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node bot.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "dependencies": {
-    "axios": "^1.7.9",
-    "dotenv": "^16.4.7",
-    "node-telegram-bot-api": "^0.66.0"
+    "moment": "^2.29.4",
+    "node-telegram-bot-api": "^0.61.0",
+    "axios": "^1.6.0"
   }
 }
