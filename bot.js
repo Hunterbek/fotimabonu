@@ -1,26 +1,23 @@
 const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
-const moment = require('moment');
 
 // Bot tokenlari
 const token = '8001151305:AAE2KeaisDoEMX7seMAb2Ab26eojhC0MR7s';
-const targetBotToken = '7938960342:AAGgKbvA0baMHfLIIdoBICUGiZr2pBrqSKI'; 
-const targetChatId = '6525277828'; 
+const targetBotToken = '7938960342:AAGgKbvA0baMHfLIIdoBICUGiZr2pBrqSKI'; // Ma'lumot yuboriladigan bot tokeni
+const targetChatId = ' 6525277828'; // Admin yoki manager chat ID
 
 // Botni ishga tushirish
 const bot = new TelegramBot(token, { polling: true });
 
-// Foydalanuvchilar ma'lumotlari
+// Foydalanuvchi bosqichlarini saqlash
 let userSteps = {};
 let userData = {};
-let registrationCount = 1;
-let currentMonth = moment().format("YYYY-MM");
 
 bot.onText(/\/start/, (msg) => {
     const chatId = msg.chat.id;
     userSteps[chatId] = 'choosing_course';
 
-    bot.sendMessage(chatId, "🎓 *Fotimabonu O'quv markaziga xush kelibsiz!*\n\n📚 Qaysi kursga qiziqasiz?", {
+    bot.sendMessage(chatId, "🎓 *Fotimabonu O'quv markaziga xush kelibsiz!* 🎓\n\n📚 Qaysi kursga qiziqasiz?", {
         parse_mode: 'Markdown',
         reply_markup: {
             keyboard: [["🇬🇧 Ingliz tili", "🇷🇺 Rus tili", "🇸🇦 Arab tili"], ["💊 Farmosevtika", "🏥 Uy Hamshiraligi"], ["🧬 Biologiya", "🧪 Kimyo", "🧮 Matematika"], ["⚛️ Fizika", "💆‍♂️ Tibbiy massaj"]],
@@ -36,51 +33,48 @@ bot.on('message', (msg) => {
 
     if (userSteps[chatId] === 'choosing_course' && text !== "/start") {
         userSteps[chatId] = 'asking_name';
-        userData[chatId] = { kurs: text, sana: moment().format('YYYY-MM-DD HH:mm') };
+        userData[chatId] = { 
+            kurs: text, 
+            sana: new Date().toLocaleString() 
+        };
         bot.sendMessage(chatId, `✅ Siz *${text}* kursini tanladingiz!\n👤 Iltimos, ismingizni kiriting.`, { parse_mode: 'Markdown' });
-    }
-    else if (userSteps[chatId] === 'asking_name') {
+
+    } else if (userSteps[chatId] === 'asking_name') {
         userSteps[chatId] = 'asking_surname';
         userData[chatId].ism = text;
-        bot.sendMessage(chatId, `📛 Endi familiyangizni kiriting.`);
-    }
-    else if (userSteps[chatId] === 'asking_surname') {
+        bot.sendMessage(chatId, `📛 Endi familiyangizni kiriting.`, { parse_mode: 'Markdown' });
+
+    } else if (userSteps[chatId] === 'asking_surname') {
         userSteps[chatId] = 'asking_birth_year';
         userData[chatId].familiya = text;
-        bot.sendMessage(chatId, `🗓 Tug‘ilgan yilingizni kiriting (masalan, 2001).`);
-    }
-    else if (userSteps[chatId] === 'asking_birth_year') {
-        if (!/^[0-9]{4}$/.test(text)) {
-            bot.sendMessage(chatId, "⚠️ Tug‘ilgan yilingizni to‘g‘ri kiriting (masalan, 2001).")
+        bot.sendMessage(chatId, `🗓 Tug‘ilgan yilingizni kiriting (masalan, 2001).`, { parse_mode: 'Markdown' });
+
+    } else if (userSteps[chatId] === 'asking_birth_year') {
+        if (!/^\d{4}$/.test(text) || parseInt(text) < 1900 || parseInt(text) > new Date().getFullYear()) {
+            bot.sendMessage(chatId, "⚠️ Iltimos, tug‘ilgan yilingizni to‘g‘ri formatda kiriting (masalan, 2001).");
             return;
         }
-        userSteps[chatId] = 'asking_telegram_profile';
+        userSteps[chatId] = 'asking_phone';
         userData[chatId].tugilganYil = text;
-        
-        bot.sendMessage(chatId, "📎 Iltimos, Telegram profilingizni yuboring.", {
+        bot.sendMessage(chatId, `📞 Endi telefon raqamingizni yuboring.`, {
+            parse_mode: 'Markdown',
             reply_markup: {
-                keyboard: [[{ text: "📎 Telegram profilni yuborish", request_contact: true }]],
+                keyboard: [[{ text: "📞 Telefon raqamni yuborish", request_contact: true }]],
                 resize_keyboard: true,
                 one_time_keyboard: true
             }
         });
-    }
-    else if (msg.contact) {
-        if (moment().format("YYYY-MM") !== currentMonth) {
-            registrationCount = 1;
-            currentMonth = moment().format("YYYY-MM");
-        }
 
+    } else if (msg.contact) {
         userData[chatId].telefon = msg.contact.phone_number;
-        userData[chatId].royxatRaqami = `${currentMonth}-#${String(registrationCount).padStart(3, '0')}`;
-        registrationCount++;
-
-        bot.sendMessage(chatId, `✅ *Ma'lumotlaringiz qabul qilindi!* \n📌 Sizning ro‘yxat raqamingiz: *${userData[chatId].royxatRaqami}* \n☎️ Tez orada siz bilan bog'lanamiz.`, {
+        
+        bot.sendMessage(chatId, `✅ *Ma'lumotlaringiz qabul qilindi!* \n☎️ Tez orada siz bilan bog'lanamiz.`, {
             parse_mode: 'Markdown',
             reply_markup: { remove_keyboard: true }
         });
 
-        const message = `📌 *Yangi ro'yxatga olish*\n\n🔢 *Ro‘yxat raqami:* ${userData[chatId].royxatRaqami}\n📅 *Sana:* ${userData[chatId].sana}\n📚 *Kurs:* ${userData[chatId].kurs}\n👤 *Ism:* ${userData[chatId].ism}\n📛 *Familiya:* ${userData[chatId].familiya}\n🎂 *Tug‘ilgan yil:* ${userData[chatId].tugilganYil}\n📞 *Telefon:* ${userData[chatId].telefon}`;
+        // Ma'lumotlarni boshqa botga yuborish
+        const message = `📌 *Yangi ro'yxatga olish*\n\n📅 *Sana:* ${userData[chatId].sana}\n📚 *Kurs:* ${userData[chatId].kurs}\n👤 *Ism:* ${userData[chatId].ism}\n📛 *Familiya:* ${userData[chatId].familiya}\n🎂 *Tug‘ilgan yil:* ${userData[chatId].tugilganYil}\n📞 *Telefon:* ${userData[chatId].telefon}`;
 
         axios.post(`https://api.telegram.org/bot${targetBotToken}/sendMessage`, {
             chat_id: targetChatId,
@@ -92,6 +86,7 @@ bot.on('message', (msg) => {
             console.error("❌ Xatolik yuz berdi:", err.response ? err.response.data : err.message);
         });
 
+        // Tozalash
         delete userSteps[chatId];
         delete userData[chatId];
     }
