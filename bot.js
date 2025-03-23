@@ -3,7 +3,7 @@ const axios = require('axios');
 
 // Bot tokenlari
 const token = '8001151305:AAE2KeaisDoEMX7seMAb2Ab26eojhC0MR7s';
-const targetBotToken = '7938960342:AAGgKbvA0baMHfLIIdoBICUGiZr2pBrqSKI'; // Ma'lumot yuboriladigan bot tokeni
+const targetBotToken = '7938960342:AAGK22pwtfeBq7YdoangN6Xb7yJUrRc1-q4'; // Ma'lumot yuboriladigan bot tokeni
 const targetChatId = ' 6525277828'; // Admin yoki manager chat ID
 
 // Botni ishga tushirish
