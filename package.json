@@ -1,7 +1,7 @@
 {
   "name": "fotimabonu-bot",
   "version": "1.0.0",
-  "description": "Fotimabonu o'quv markazi uchun Telegram bot",
+  "description": "Telegram bot for Fotimabonu education center",
   "main": "bot.js",
   "scripts": {
     "start": "node bot.js"
